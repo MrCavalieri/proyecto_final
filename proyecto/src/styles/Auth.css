@@ -1,0 +1,76 @@
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  background-color: var(--background-color);
+}
+
+.logo {
+  width: 150px;
+  margin-bottom: 40px;
+}
+
+.logo img {
+  width: 100%;
+  height: auto;
+}
+
+.auth-form-container {
+  background-color: rgba(255, 255, 255, 0.336);
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 480px;
+}
+
+.auth-form-container h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: var(--text-color);
+  font-size: 2em;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  position: relative;
+}
+
+.submit-button {
+  margin-top: 20px;
+  width: 100%;
+  padding: 14px;
+  font-size: 18px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.submit-button:hover {
+  transform: translateY(-2px);
+  background-color: #357abd;
+}
+
+.auth-links {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.auth-links p {
+  margin: 10px 0;
+  color: var(--text-color);
+}
+
+.form-group input::placeholder {
+  color: rgba(255, 255, 255, 0.6); /* Color del texto placeholder */
+}
