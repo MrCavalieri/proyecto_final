@@ -6,6 +6,8 @@ const {
   likeProduct,
   verifyAuth,
   logout,
+  getUserById,
+  createAdminPassword,
 } = require("../controllers/userController");
 const purchController = require("../controllers/purchController");
 const cartController = require("../controllers/cartController");
@@ -15,8 +17,10 @@ const { verifyToken } = require("../middlewares/authMiddleware");
 // Rutas de Autenticación
 router.post("/usuarios", createUser);
 router.post("/login", loginUser);
+router.post("/create-admin-password", createAdminPassword);
 router.post("/logout", logout); //Ruta para Logout
 router.get("/auth/verify", verifyToken, verifyAuth); //Ruta para verificar autenticación
+router.get("/users/:id", getUserById);
 
 // Rutas de Usuario autenticado
 router.post("/favoritos", likeProduct);

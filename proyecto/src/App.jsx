@@ -14,7 +14,14 @@ import Perfil from "./pages/Perfil";
 import MisCompras from "./pages/MisCompras";
 import Carrito from "./pages/Carrito";
 import MisDeseos from "./pages/MisDeseos";
+import ResetPasswordForm from "./pages/ResetPasswordForm";
+import ProductManagement from "./pages/ProductManagement";
+import UpdateProduct from "./pages/UpdateProduct";
+import CreateProduct from "./pages/CreateProduct";
+import UserManagement from "./pages/UserManagement";
 import axios from "./config/axios";
+import { CartProvider } from "./context/CartContext"; // Importación del CartContext
+import CreatePassword from "./pages/CreatePassword";
 
 // Componente para rutas protegidas
 const PrivateRoute = ({ children }) => {
@@ -40,11 +47,7 @@ const PrivateRoute = ({ children }) => {
     return <div>Cargando...</div>;
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return children;
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
 
 // Añadimos la validación de PropTypes
@@ -54,52 +57,100 @@ PrivateRoute.propTypes = {
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Rutas públicas */}
-        <Route path="/home" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-
-        {/* Rutas privadas*/}
-        <Route
-          path="/perfil"
-          element={
-            <PrivateRoute>
-              <Perfil />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/mis-compras"
-          element={
-            <PrivateRoute>
-              <MisCompras />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/carrito"
-          element={
-            <PrivateRoute>
-              <Carrito />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/mis-deseos"
-          element={
-            <PrivateRoute>
-              <MisDeseos />
-            </PrivateRoute>
-          }
-        />
-
-        {/* Ruta para manejar páginas no encontradas */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
+    <CartProvider>
+      <Router>
+        <Routes>
+          {/* Rutas públicas */}
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          {/* Rutas privadas */}
+          <Route
+            path="/perfil"
+            element={
+              <PrivateRoute>
+                <Perfil />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/create-password/:id"
+            element={
+              <PrivateRoute>
+                <CreatePassword />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/mis-compras"
+            element={
+              <PrivateRoute>
+                <MisCompras />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/carrito"
+            element={
+              <PrivateRoute>
+                <Carrito />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/mis-deseos"
+            element={
+              <PrivateRoute>
+                <MisDeseos />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/reset-password/:token"
+            element={
+              <PrivateRoute>
+                <ResetPasswordForm />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/gestion-productos"
+            element={
+              <PrivateRoute>
+                <ProductManagement />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/update-product"
+            element={
+              <PrivateRoute>
+                <UpdateProduct />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/create-product"
+            element={
+              <PrivateRoute>
+                <CreateProduct />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/control-usuarios"
+            element={
+              <PrivateRoute>
+                <UserManagement />
+              </PrivateRoute>
+            }
+          />
+          {/* Ruta para manejar páginas no encontradas */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Router>
+    </CartProvider>
   );
 }
 

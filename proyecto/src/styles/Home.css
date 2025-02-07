@@ -57,9 +57,3 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
-
-.likes-count {
-  font-size: 0.9em;
-  color: var(--error-color);
-  font-weight: bold;
-}

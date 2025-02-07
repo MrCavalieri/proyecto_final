@@ -1,0 +1,95 @@
+.section-title {
+  text-align: center;
+  margin-bottom: 30px;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.productos-section {
+  padding: 40px 20px;
+}
+
+/* Lista de productos con mejor alineación */
+.productos-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+/* Tarjeta de producto alineada con home */
+.producto-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-sizing: border-box;
+  backdrop-filter: blur(10px);
+  transition: transform 0.2s;
+}
+
+.producto-item:hover {
+  transform: translateY(-5px);
+}
+
+/* Imagen del producto */
+.producto-image-container {
+  flex-shrink: 0;
+}
+
+.producto-image {
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Información del producto alineada con estilos globales */
+.producto-info {
+  flex-grow: 1;
+  font-size: 1.1em;
+}
+
+.stock-info {
+  font-size: 1em;
+  color: var(--secondary-color);
+}
+
+/* Acciones del stock con consistencia */
+.stock-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Paginación consistente con home */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 40px;
+  padding: 20px;
+}
+
+.pagination-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 15px;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.2s;
+  backdrop-filter: blur(10px);
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: var(--primary-color);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

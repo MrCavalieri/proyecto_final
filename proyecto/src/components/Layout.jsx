@@ -4,6 +4,7 @@ import NavBar from "../components/NavBar";
 import Sidebar from "../components/SideBar";
 import "../styles/Layout.css";
 
+//lo usamos para no estar importando navbar y sidebar en cada página
 function Layout({ children }) {
   const [collapsed, setCollapsed] = useState(false);
 

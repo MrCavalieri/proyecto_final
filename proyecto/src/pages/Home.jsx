@@ -3,16 +3,12 @@ import Layout from "../components/Layout";
 import ProductCarousel from "../components/ProductCarousel";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faCartPlus,
-  faCartShopping,
-  faMinusCircle,
-  faPlusCircle,
   faChevronLeft,
   faChevronRight,
-  faHeart as fasHeart,
 } from "@fortawesome/free-solid-svg-icons";
-import { faHeart as farHeart } from "@fortawesome/free-regular-svg-icons";
 import "../styles/Home.css";
+import ProductCard from "../components/ProductCard";
+import { useCart } from "../context/CartContext";
 
 // Productos de ejemplo
 const productos = [
@@ -163,42 +159,62 @@ const productos = [
 ];
 
 function Home() {
-  const [carrito, setCarrito] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
-  const [likedProducts, setLikedProducts] = useState(new Set());
+  const [searchQuery, setSearchQuery] = useState(() => {
+    return localStorage.getItem("searchQuery") || "";
+  });
   const itemsPerPage = 12;
   const totalPages = Math.ceil(productos.length / itemsPerPage);
+  const { carrito, toggleCarrito } = useCart();
+  const [filteredProducts, setFilteredProducts] = useState(productos);
 
-  // Cargar likes guardados al iniciar, se debe cambiar para cargar desde BD
   useEffect(() => {
-    const savedLikes = JSON.parse(localStorage.getItem("likedProducts")) || [];
-    setLikedProducts(new Set(savedLikes));
+    const handleStorageChange = () => {
+      setSearchQuery(localStorage.getItem("searchQuery") || "");
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  const toggleCarrito = (productoId) => {
-    if (carrito[productoId]) {
-      const nuevoCarrito = { ...carrito };
-      delete nuevoCarrito[productoId];
-      setCarrito(nuevoCarrito);
-    } else {
-      setCarrito({ ...carrito, [productoId]: 1 });
+  useEffect(() => {
+    // Aplicar filtro inicial si hay una búsqueda guardada
+    const savedQuery = localStorage.getItem("searchQuery");
+    if (savedQuery) {
+      const searchEvent = new CustomEvent("onSearch", {
+        detail: { query: savedQuery },
+      });
+      window.dispatchEvent(searchEvent);
     }
-  };
 
-  const actualizarCantidad = (productoId, cantidad) => {
-    if (cantidad < 1) {
-      const nuevoCarrito = { ...carrito };
-      delete nuevoCarrito[productoId];
-      setCarrito(nuevoCarrito);
-      return;
-    }
-    setCarrito({ ...carrito, [productoId]: cantidad });
-  };
+    const handleSearch = (event) => {
+      const query = event.detail.query.toLowerCase();
+      if (query === "") {
+        setFilteredProducts(productos);
+      } else {
+        const filtered = productos.filter(
+          (product) =>
+            product.nombre.toLowerCase().includes(query) ||
+            product.nombre.toLowerCase().includes(query)
+        );
+        setFilteredProducts(filtered);
+      }
+    };
+
+    window.addEventListener("onSearch", handleSearch);
+
+    return () => {
+      window.removeEventListener("onSearch", handleSearch);
+    };
+  }, [productos]);
 
   const getCurrentProducts = () => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    return productos.slice(startIndex, endIndex);
+    return filteredProducts
+      .map((producto) => ({
+        ...producto,
+        cantidad: carrito[producto.id]?.cantidad || 0,
+      }))
+      .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   };
 
   const getPageNumbers = () => {
@@ -219,37 +235,8 @@ function Home() {
     return pages;
   };
 
-  const handleLike = (producto) => {
-    setLikedProducts((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(producto.id)) {
-        newSet.delete(producto.id);
-      } else {
-        newSet.add(producto.id);
-      }
-
-      // Guardar IDs en localStorage, se debe cambiar para usar BD
-      localStorage.setItem("likedProducts", JSON.stringify([...newSet]));
-
-      // Guardar datos completos de productos, también se requiere cambiar
-      const likedProductsData =
-        JSON.parse(localStorage.getItem("likedProductsData")) || {};
-      if (newSet.has(producto.id)) {
-        likedProductsData[producto.id] = producto;
-      } else {
-        delete likedProductsData[producto.id];
-      }
-      localStorage.setItem(
-        "likedProductsData",
-        JSON.stringify(likedProductsData)
-      );
-
-      return newSet;
-    });
-  };
-
   return (
-    <Layout>
+    <Layout setSearchQuery={setSearchQuery}>
       <h2 className="featured-title">Productos Destacados</h2>
       <ProductCarousel />
 
@@ -257,65 +244,12 @@ function Home() {
         <h2 className="section-title">Nuestros Productos</h2>
         <div className="productos-grid">
           {getCurrentProducts().map((producto) => (
-            <div key={producto.id} className="producto-card">
-              <img src={producto.imagen} alt={producto.nombre} />
-              <h3>{producto.nombre}</h3>
-              <p className="precio">${producto.precio.toLocaleString()}</p>
-
-              {carrito[producto.id] ? (
-                <div className="carrito-controles">
-                  <button
-                    className="cantidad-btn"
-                    onClick={() =>
-                      actualizarCantidad(producto.id, carrito[producto.id] - 1)
-                    }
-                  >
-                    <FontAwesomeIcon icon={faMinusCircle} />
-                  </button>
-                  <span className="cantidad">{carrito[producto.id]}</span>
-                  <button
-                    className="cantidad-btn"
-                    onClick={() =>
-                      actualizarCantidad(producto.id, carrito[producto.id] + 1)
-                    }
-                  >
-                    <FontAwesomeIcon icon={faPlusCircle} />
-                  </button>
-                </div>
-              ) : null}
-
-              <div className="producto-actions">
-                <button
-                  className={`carrito-btn ${
-                    carrito[producto.id] ? "en-carrito" : ""
-                  }`}
-                  onClick={() => toggleCarrito(producto.id)}
-                >
-                  <FontAwesomeIcon
-                    icon={carrito[producto.id] ? faCartShopping : faCartPlus}
-                  />
-                  {carrito[producto.id]
-                    ? " Quitar del carrito"
-                    : " Agregar al carrito"}
-                </button>
-                <div className="like-container">
-                  <button
-                    className="like-btn"
-                    onClick={() => handleLike(producto)}
-                  >
-                    <FontAwesomeIcon
-                      icon={
-                        likedProducts.has(producto.id) ? fasHeart : farHeart
-                      }
-                      className="icon"
-                    />
-                  </button>
-                  <span className="likes-count">
-                    {likedProducts.has(producto.id) ? 1 : 0}
-                  </span>
-                </div>
-              </div>
-            </div>
+            <ProductCard
+              key={producto.id}
+              producto={producto}
+              carrito={carrito}
+              onToggleCarrito={toggleCarrito}
+            />
           ))}
         </div>
 

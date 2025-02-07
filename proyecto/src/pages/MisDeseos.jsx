@@ -1,34 +1,37 @@
 import { useState, useEffect } from "react";
 import Layout from "../components/Layout";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCartPlus,
-  faCartShopping,
-  faMinusCircle,
-  faPlusCircle,
-  faHeart as fasHeart,
-} from "@fortawesome/free-solid-svg-icons";
+import ProductCard from "../components/ProductCard";
 import "../styles/MisDeseos.css";
 
 function MisDeseos() {
   const [favoritos, setFavoritos] = useState([]);
+  const [likedProducts, setLikedProducts] = useState(new Set());
   const [carrito, setCarrito] = useState({});
 
-  useEffect(() => {
-    // Cargar productos favoritos del localStorage
+  const actualizarFavoritos = () => {
     const likedProductsData =
       JSON.parse(localStorage.getItem("likedProductsData")) || {};
+    const likedIds = JSON.parse(localStorage.getItem("likedProducts")) || [];
     setFavoritos(Object.values(likedProductsData));
+    setLikedProducts(new Set(likedIds));
+  };
+
+  useEffect(() => {
+    actualizarFavoritos();
+    const savedCarrito = JSON.parse(localStorage.getItem("carrito")) || {};
+    setCarrito(savedCarrito);
+    window.addEventListener("storage", actualizarFavoritos);
+    return () => {
+      window.removeEventListener("storage", actualizarFavoritos);
+    };
   }, []);
 
   const handleRemoveFavorito = (productoId) => {
-    // Actualizar likedProducts
     const likedProducts =
       JSON.parse(localStorage.getItem("likedProducts")) || [];
     const newLikedProducts = likedProducts.filter((id) => id !== productoId);
     localStorage.setItem("likedProducts", JSON.stringify(newLikedProducts));
 
-    // Actualizar likedProductsData
     const likedProductsData =
       JSON.parse(localStorage.getItem("likedProductsData")) || {};
     delete likedProductsData[productoId];
@@ -36,29 +39,38 @@ function MisDeseos() {
       "likedProductsData",
       JSON.stringify(likedProductsData)
     );
-
-    // Actualizar estado
     setFavoritos(Object.values(likedProductsData));
+    setLikedProducts(new Set(newLikedProducts));
   };
 
   const toggleCarrito = (productoId) => {
-    if (carrito[productoId]) {
-      const nuevoCarrito = { ...carrito };
-      delete nuevoCarrito[productoId];
-      setCarrito(nuevoCarrito);
+    setCarrito((prevCarrito) => {
+      const newCarrito = { ...prevCarrito };
+      if (newCarrito[productoId]) {
+        delete newCarrito[productoId];
+      } else {
+        newCarrito[productoId] = 1;
+      }
+      localStorage.setItem("carrito", JSON.stringify(newCarrito));
+      return newCarrito;
+    });
+  };
+
+  const actualizarCantidad = (productoId, nuevaCantidad) => {
+    if (nuevaCantidad < 1) {
+      const newCarrito = { ...carrito };
+      delete newCarrito[productoId];
+      setCarrito(newCarrito);
+      localStorage.setItem("carrito", JSON.stringify(newCarrito));
     } else {
-      setCarrito({ ...carrito, [productoId]: 1 });
+      const newCarrito = { ...carrito, [productoId]: nuevaCantidad };
+      setCarrito(newCarrito);
+      localStorage.setItem("carrito", JSON.stringify(newCarrito));
     }
   };
 
-  const actualizarCantidad = (productoId, cantidad) => {
-    if (cantidad < 1) {
-      const nuevoCarrito = { ...carrito };
-      delete nuevoCarrito[productoId];
-      setCarrito(nuevoCarrito);
-      return;
-    }
-    setCarrito({ ...carrito, [productoId]: cantidad });
+  const handleRemoveFromWishlist = (productoId) => {
+    handleRemoveFavorito(productoId);
   };
 
   return (
@@ -69,63 +81,16 @@ function MisDeseos() {
         <div className="misdeseos-grid">
           {favoritos.length > 0 ? (
             favoritos.map((producto) => (
-              <div key={producto.id} className="producto-card">
-                <img src={producto.imagen} alt={producto.nombre} />
-                <h3>{producto.nombre}</h3>
-                <p className="precio">${producto.precio.toLocaleString()}</p>
-
-                {carrito[producto.id] && (
-                  <div className="carrito-controles">
-                    <button
-                      className="cantidad-btn"
-                      onClick={() =>
-                        actualizarCantidad(
-                          producto.id,
-                          carrito[producto.id] - 1
-                        )
-                      }
-                    >
-                      <FontAwesomeIcon icon={faMinusCircle} />
-                    </button>
-                    <span className="cantidad">{carrito[producto.id]}</span>
-                    <button
-                      className="cantidad-btn"
-                      onClick={() =>
-                        actualizarCantidad(
-                          producto.id,
-                          carrito[producto.id] + 1
-                        )
-                      }
-                    >
-                      <FontAwesomeIcon icon={faPlusCircle} />
-                    </button>
-                  </div>
-                )}
-
-                <div className="producto-actions">
-                  <button
-                    className={`carrito-btn ${
-                      carrito[producto.id] ? "en-carrito" : ""
-                    }`}
-                    onClick={() => toggleCarrito(producto.id)}
-                  >
-                    <FontAwesomeIcon
-                      icon={carrito[producto.id] ? faCartShopping : faCartPlus}
-                    />
-                    {carrito[producto.id]
-                      ? " Quitar del carrito"
-                      : " Agregar al carrito"}
-                  </button>
-                  <div className="like-container">
-                    <button
-                      className="like-btn"
-                      onClick={() => handleRemoveFavorito(producto.id)}
-                    >
-                      <FontAwesomeIcon icon={fasHeart} className="icon" />
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <ProductCard
+                key={producto.id}
+                producto={producto}
+                onRemoveFromWishlist={handleRemoveFromWishlist}
+                carrito={carrito}
+                likedProducts={likedProducts}
+                onToggleCarrito={toggleCarrito}
+                onUpdateCantidad={actualizarCantidad}
+                handleRemoveFavorito={handleRemoveFavorito}
+              />
             ))
           ) : (
             <div className="empty-message">

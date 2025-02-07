@@ -31,34 +31,35 @@ function Register() {
     }
 
     try {
-      // Registro de usuario usando axios
-      await axios.post("/usuarios", {
-        nombre: formData.nombre,
-        correo: formData.correo,
-        direccion: formData.direccion,
-        ciudad: formData.ciudad,
-        telefono: formData.telefono,
-        password: formData.password,
-        rol: formData.rol,
+      const response = await axios.post("/usuarios", formData, {
+        withCredentials: true, //Asegura que las cookies del token se almacenen
       });
 
-      // Login automático usando axios
-      await axios.post("/login", {
-        correo: formData.correo,
-        password: formData.password,
-      });
+      const userData = response.data.data;
+      const token = response.data.token; //Recibimos el token generado
 
-      setSuccess("✅ Registro exitoso");
+      if (!userData) {
+        setError("❌ Error al registrar el usuario.");
+        return;
+      }
 
-      setTimeout(() => {
-        navigate("/home");
-      }, 1000);
-    } catch (err) {
-      setError(
-        err.response?.data?.error ||
-          err.message ||
-          "❌ Error en la conexión con el servidor"
-      );
+      if (userData.rol === "admin") {
+        if (!token) {
+          setError("❌ No se recibió un token de autenticación.");
+          return;
+        }
+
+        // Redirigir a crear contraseña
+        navigate(`/create-password/${userData.id}`);
+      } else {
+        setSuccess("✅ Usuario creado exitosamente.");
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      setError(error.response?.data?.error || "Error al crear el usuario");
     }
   };
 
